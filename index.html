@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>EduPlay</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #eef2f3;
+  padding: 20px;
+}
+
+h1 {
+  color: #2c3e50;
+}
+
+button {
+  padding: 10px 15px;
+  margin: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: none;
+  background: #0984e3;
+  color: white;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #74b9ff;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#game {
+  margin-top: 20px;
+}
+
+.card {
+  display: inline-block;
+  width: 180px;
+  min-height: 80px;
+  margin: 10px;
+  padding: 5px;
+  line-height: normal;
+  text-align: center;
+  background: linear-gradient(135deg, #ffe066, #fab1a0);
+  border: 2px solid #2d3436;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.3s;
+  word-wrap: break-word;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #fab1a0, #ffe066);
+}
+
+.matched {
+  background: linear-gradient(135deg, #55efc4, #00b894);
+  color: white;
+  cursor: default;
+}
+
+#finalMessage {
+  font-size: 22px;
+  color: #27ae60;
+  margin-top: 30px;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 EduPlay</h1>
+<p>Învață prin joc – potrivește corect conceptele</p>
+
+<button onclick="loadPreset()">Joacă set chimie (liceu)</button>
+<button onclick="showCustom()">Creează propriul joc</button>
+
+<div id="custom" style="display:none;">
+  <h3>Introdu perechile tale</h3>
+  <input id="a" placeholder="Concept">
+  <input id="b" placeholder="Definiție / asociere">
+  <br>
+  <button onclick="addPair()">Adaugă pereche</button>
+  <button onclick="startGame()">Start joc</button>
+</div>
+
+<div id="game"></div>
+
+<div id="finalMessage">
+  🎉 Felicitări! Ai terminat jocul!  
+  <br>Repetiția este cheia învățării 🔑
+</div>
+
+<script>
+let pairs = [];
+let cards = [];
+let firstCard = null;
+let matchedCount = 0;
+
+/* SET IMPLICIT – CHIMIE LICEU */
+function loadPreset() {
+  pairs = [
+    "Oxidare", "Pierdere de electroni",
+    "Reducere", "Câștig de electroni",
+    "Acid", "pH < 7",
+    "Bază", "pH > 7",
+    "Legătură ionică", "Transfer de electroni",
+    "Legătură covalentă", "Punere în comun de electroni",
+    "NaCl", "Clorură de sodiu",
+    "H₂SO₄", "Acid sulfuric"
+  ];
+  document.getElementById("custom").style.display = "none";
+  startGame();
+}
+
+/* MOD INTRODUCERE PROPRIE */
+function showCustom() {
+  pairs = [];
+  document.getElementById("custom").style.display = "block";
+  document.getElementById("game").innerHTML = "";
+  document.getElementById("finalMessage").style.display = "none";
+}
+
+/* ADAUGARE PERECHE */
+function addPair() {
+  const a = document.getElementById("a").value;
+  const b = document.getElementById("b").value;
+
+  if (a && b) {
+    pairs.push(a, b);
+    document.getElementById("a").value = "";
+    document.getElementById("b").value = "";
+  }
+}
+
+/* PORNIRE JOC */
+function startGame() {
+  cards = [];
+  firstCard = null;
+  matchedCount = 0;
+  document.getElementById("game").innerHTML = "";
+  document.getElementById("finalMessage").style.display = "none";
+
+  for (let i = 0; i < pairs.length; i += 2) {
+    cards.push({ text: pairs[i], id: i });
+    cards.push({ text: pairs[i + 1], id: i });
+  }
+
+  cards.sort(() => Math.random() - 0.5);
+
+  cards.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card hidden";
+    card.innerText = item.text;
+    card.dataset.id = item.id;
+    card.onclick = () => flip(card);
+    document.getElementById("game").appendChild(card);
+  });
+}
+
+/* LOGICA DE POTRIVIRE */
+function flip(card) {
+  if (!card.classList.contains("hidden") || card.classList.contains("matched")) return;
+
+  card.classList.remove("hidden");
+
+  if (!firstCard) {
+    firstCard = card;
+  } else {
+    if (firstCard.dataset.id === card.dataset.id) {
+      firstCard.classList.add("matched");
+      card.classList.add("matched");
+      matchedCount += 2;
+      firstCard = null;
+
+      if (matchedCount === cards.length) {
+        document.getElementById("finalMessage").style.display = "block";
+      }
+    } else {
+      setTimeout(() => {
+        card.classList.add("hidden");
+        firstCard.classList.add("hidden");
+        firstCard = null;
+      }, 800);
+    }
+  }
+}
+</script>
+
+</body>
+</html>
